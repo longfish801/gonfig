@@ -63,7 +63,7 @@ class Sample {
 }
 ```
 
-　このサンプルコードは build.gradle内の execSampleタスクで実行しています。
+　このサンプルコードは build.gradle内の execSamplesタスクで実行しています。
 
 ## GitHubリポジトリ
 
@@ -107,4 +107,9 @@ ${Gonfigを実装したクラスの名前をすべて小文字にした文字列
 3. ファイルシステム /foo/sample/grope/some.groovy
 4. クラスパス /boo/some.groovy
 5. クラスパス /boo/sample/grope/some.groovy
+
+## 改版履歴
+
+0.1.01
+: build.gradleに fix, masterup, releaseタスクを追加
 
