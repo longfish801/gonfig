@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.1.01'
+version = '0.1.02'
 
 repositories {
 	mavenCentral()
@@ -75,14 +75,14 @@ task execSamples(type: JavaExec, dependsOn: ['test']) {
 }
 
 // フィックスします
-task fix(dependsOn: [clean, jacocoTestReport, execSamples]){
+task fix(dependsOn: [clean, jacocoTestReport, execSamples, groovydoc, generateHtml]){
 }
 
 // マスターアップします
 task deleteDocs(type: Delete){
 	delete 'docs'
 }
-task masterup(dependsOn: [deleteDocs, groovydoc, generateHtml]){
+task masterup(dependsOn: [deleteDocs, fix]){
 	doLast {
 		copy {
 			from 'build/html'

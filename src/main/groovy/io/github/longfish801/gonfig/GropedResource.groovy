@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory
  * 初期化されないという問題がみつかりました。<br/>
  * 対応としてgetterメソッド内や初めて参照するときに初期化しています。<br/>
  * この挙動が Groovyの故障なのか追及はしていません。
- * @version 1.0.00 2020/04/11
+ * @version 0.1.00 2020/04/11
  * @author io.github.longfish801
  */
 trait GropedResource {

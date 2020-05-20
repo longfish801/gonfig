@@ -7,7 +7,7 @@ package io.github.longfish801.gonfig
 
 /**
  * GropedResourceクラスのテスト用クラス。
- * @version 1.0.00 2020/04/11
+ * @version 0.1.00 2020/04/11
  * @author io.github.longfish801
  */
 class Rsrc implements GropedResource {
