@@ -13,7 +13,7 @@ import spock.lang.Specification
 
 /**
  * GropedResourceクラスのテスト。
- * @version 1.0.00 2020/04/11
+ * @version 0.1.00 2020/04/11
  * @author io.github.longfish801
  */
 class GropedResourceSpec extends Specification {

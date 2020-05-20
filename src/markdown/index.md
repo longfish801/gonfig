@@ -5,6 +5,7 @@
 ## 概要
 
 　設定を静的に保持します。
+　groovy.util.ConfigSlurperを java.util.ResourceBundleのように利用できます。
 
 　個人が学習のために開発したものです。
 　故障対応や問合せ回答などのサポートはしていません。
@@ -19,7 +20,7 @@
 
 ## サンプルコード
 
-　設定ファイル（src/test/resources/sample/config.groovy）です。
+　設定ファイル（src/test/resources/sample/sampleconfig.groovy）です。
 　キーと、それに対応する値を記述しています。
 
 ```
@@ -31,7 +32,8 @@ some.list = [ 1, 2, 3 ]
 
 　設定を保持するクラス（src/test/groovy/sample/grope/Config.groovy）です。
 　Gonfigを実装することで、static変数の初期化時に設定ファイルを読みこみます。
-　getClazzメソッドをオーバーライドする必要があることに留意してください。
+　Gonfigを実装する必要条件として、static変数 clazzに自クラスを格納してください。
+　static変数 resourceFileNameに設定ファイル名を指定しています。
 
 ```
 package sample.grope
@@ -39,9 +41,8 @@ package sample.grope
 import io.github.longfish801.gonfig.Gonfig
 
 class Config implements Gonfig {
-	static Class getClazz(){
-		return Config.class
-	}
+	static final Class clazz = Config.class
+	static final String resourceFileName = 'sampleconfig'
 }
 ```
 
@@ -91,11 +92,12 @@ dependencies {
 
 ## 設定ファイル
 
-　設定ファイル名のフォーマットは以下のとおりです。
+　設定ファイル名のフォーマットはデフォルトで以下のとおりです。
 　Gonfigを実装したクラス名が Someならば、設定ファイル名は some.groovyとなります。
+　設定ファイル名、拡張子をデフォルトから変更したい場合は Gonfig特性の getResourceFileNameメソッド、getResourceFileExtensionメソッドをそれぞれオーバーライド（もしくは static変数 resourceFileName、resourceFileExtensionを定義）してください。
 
 ```
-${Gonfigを実装したクラスの名前をすべて小文字にした文字列}.groovy
+${Gonfigを実装したクラスの単純名をすべて小文字に変換した文字列}.groovy
 ```
 
 　Someクラスのパッケージが sample.gropeだったとします。
@@ -111,5 +113,8 @@ ${Gonfigを実装したクラスの名前をすべて小文字にした文字列
 ## 改版履歴
 
 0.1.01
-: build.gradleに fix, masterup, releaseタスクを追加
+: build.gradleに fix, masterup, releaseタスクを追加しました。
+
+0.1.02
+: 設定ファイルを参照するためのリソース名を改変可能にしました。
 

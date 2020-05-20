@@ -3,7 +3,6 @@ package sample.grope
 import io.github.longfish801.gonfig.Gonfig
 
 class Config implements Gonfig {
-	static Class getClazz(){
-		return Config.class
-	}
+	static final Class clazz = Config.class
+	static final String resourceFileName = 'sampleconfig'
 }
