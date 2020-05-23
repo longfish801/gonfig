@@ -13,8 +13,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * ファイルシステムあるいはクラスパスからリソースを探します。</br>
- * たとえば次のような使い方を想定しています。</br>
+ * ファイルシステムあるいはクラスパスからリソースを探します。</p>
+ * 
+ * <p>たとえば次のような使い方を想定しています。</br>
  * デフォルト値を定義した設定ファイルを JARファイルに格納します。
  * この設定ファイルはクラスファイルと同様に、JARファイル内の、
  * パッケージ名に対応する階層のディレクトリに格納します。<br/>
@@ -23,36 +24,21 @@ import org.slf4j.LoggerFactory
  * するとファイルシステム上の設定ファイルのほうが優先して
  * 参照されるため、新しい設定値のほうが用いられます。</p>
  * 
- * <p>以下にソースコードのサンプルを示します。</p>
- * <pre>
- * package sample.grope
- * class Some implements GropedResource {
- *     ConfigObject config = GropedResource.setBaseDir('/foo').configObject('some.groovy')
- * }
- * </pre>
- * <p>このとき setBaseDirメソッドは、以下の順番で some.groovyを探していき、
- * 初めにみつかったリソース上のファイルを解析して ConfigObjectを返します。</p>
- * <ol>
- * <li>ファイルシステム /foo/some.groovy</li>
- * <li>ファイルシステム /foo/sample.grope/some.groovy</li>
- * <li>ファイルシステム /foo/sample/grope/some.groovy</li>
- * <li>クラスパス some.groovy</li>
- * <li>クラスパス sample/grope/some.groovy</li>
- * </ol>
- * 
- * <p>どのようにリソースを探すのか、
- * 詳細は {@link grope(String)}を参照してください。<br/>
+ * <p>どのようにリソースを探すのか、詳細は {@link #grope(String)}を
+ * 参照してください。<br/>
  * 本特性の実装時は {@link #getClazz()}のオーバーライドが
  * 必要なことに注意してください。</p>
  *
  * <p>本特性を継承して使用すると staticメンバの宣言が実行されず、
- * 初期化されないという問題がみつかりました。<br/>
+ * 初期化されない問題がみつかりました。<br/>
  * 対応としてgetterメソッド内や初めて参照するときに初期化しています。<br/>
  * この挙動が Groovyの故障なのか追及はしていません。
- * @version 1.0.00 2020/04/11
+ * @version 0.1.03 2020/05/20
  * @author io.github.longfish801
  */
 trait GropedResource {
+	/** リソースバンドル */
+	static final ResourceBundle RSRC = ResourceBundle.getBundle(GropedResource.class.canonicalName)
 	/** ログ出力 */
 	private static Logger _log
 	/** 基底ディレクトリ */
@@ -98,7 +84,7 @@ trait GropedResource {
 	 * @return 基底ディレクトリ
 	 */
 	static File getBaseDir(){
-		if (_baseDir == null) _baseDir = new File('.')
+		if (_baseDir == null) _baseDir = new File(RSRC.getString('CURRENT_DIRECTORY'))
 		return _baseDir
 	}
 	
@@ -112,12 +98,12 @@ trait GropedResource {
 	 * たとえば基底ディレクトリが /foo/barで、
 	 * クラスが io.github.Someならば、平坦ディレクトリとして
 	 * /foo/bar/io.githubを返します。<br/>
-	 * クラスがパッケージに所属しない場合、相対パスは
-	 * カレントディレクトリを用います。
+	 * クラスがパッケージに所属しない場合、
+	 * 相対パスはカレントディレクトリを用います。
 	 * @return 平坦ディレクトリ
 	 */
 	static File getFlatDir(){
-		return new File(baseDir, clazz.package?.name ?: '.')
+		return new File(baseDir, clazz.package?.name ?: RSRC.getString('CURRENT_DIRECTORY'))
 	}
 	
 	/**
@@ -136,12 +122,18 @@ trait GropedResource {
 	 * @return 深層ディレクトリ
 	 */
 	static File getDeepDir(){
-		String path = (clazz.package == null)? '.': clazz.package.name.replaceAll(Pattern.quote('.'), Matcher.quoteReplacement(File.separator))
+		if (clazz.package == null) return new File(baseDir, RSRC.getString('CURRENT_DIRECTORY'))
+		String path = clazz.package.name.replaceAll(
+			Pattern.quote(RSRC.getString('PACKAGE_SEPARATOR')),
+			Matcher.quoteReplacement(File.separator))
 		return new File(baseDir, path)
 	}
 	
 	/**
 	 * 指定された名前のリソースを探します。<br/>
+	 * まずデフォルトロケールを付与したリソース名で探し、
+	 * 次にデフォルトロケールなし（引数で指定されたそのまま）の
+	 * リソース名で探します。<br/>
 	 * 以下の順番で探し、初めにみつかったリソースを返します。<br/>
 	 * みつからなければ WARNログを出力してnullを返します。</p>
 	 * <ol>
@@ -153,34 +145,52 @@ trait GropedResource {
 	 * </ol>
 	 * @param name リソースの名前
 	 * @return URL（リソースがみつからない場合は null）
+	 * @see #grantLocale(String)
 	 * @see #setBaseDir(String)
 	 * @see #getBaseDir()
 	 * @see #getDeepDir()
 	 * @see #getFlatDir()
 	 */
 	static URL grope(String name){
-		// 基底ディレクトリ、平坦ディレクトリ、深層ディレクトリの順にリソースを探し、
-		// みつかったならば返します
-		for (File dir in [baseDir, flatDir, deepDir]){
-			File file = new File(dir, name)
-			if (file.exists()){
-				log.debug('Resource file groped: class={}, path={}', clazz.canonicalName, file.absolutePath)
-				return file.toURI().toURL()
+		Closure groper = { String rname ->
+			// 基底ディレクトリ、平坦ディレクトリ、深層ディレクトリの順にリソースを探し、
+			// みつかったならば返します
+			for (File dir in [baseDir, flatDir, deepDir]){
+				File file = new File(dir, rname)
+				if (file.exists()){
+					log.debug('Resource file groped: class={}, path={}', clazz.canonicalName, file.absolutePath)
+					return file.toURI().toURL()
+				}
+			}
+			
+			// パッケージルート、クラスの順にリソースを探し、みつかったならば返します
+			for (def loader in [ClassLoader.systemClassLoader, clazz]){
+				URL url = loader.getResource(rname)
+				if (url != null){
+					log.debug('Resource groped: class={}, url={}', clazz.canonicalName, url)
+					return url
+				}
 			}
 		}
-		
-		// パッケージルート、クラスの順にリソースを探し、みつかったならば返します
-		for (def loader in [ClassLoader.systemClassLoader, clazz]){
-			URL url = loader.getResource(name)
-			if (url != null){
-				log.debug('Resource groped: class={}, url={}', clazz.canonicalName, url)
-				return url
-			}
-		}
-		
-		// リソースがみつからなかった場合は nullを返します。
-		log.warn('Resource not found:class={}, name={}', clazz.canonicalName, name)
-		return null
+		URL url = groper(grantLocale(name)) ?: groper(name)
+		if (url == null) log.warn('Resource not groped:class={}, name={}', clazz.canonicalName, name)
+		return url
+	}
+	
+	/**
+	 * リソース名にデフォルトロケールを付与します。<br/>
+	 * デフォルトロケールは {@link Locale#getDefault()}で取得します。<br/>
+	 * リソース名にファイル名と拡張子との区切り文字(.)が含まれていれば、
+	 * 区切り文字の前に半角アンダーバー＋デフォルトロケールを挿入します。<br/>
+	 * 区切り文字が含まれていない場合は、リソース名の末尾に
+	 * 半角アンダーバー＋デフォルトロケールを付加します。
+	 * @param name リソースの名前
+	 * @return デフォルトロケールを付与したリソースの名前
+	 */
+	static String grantLocale(String name){
+		int idx = name.lastIndexOf(RSRC.getString('CURRENT_DIRECTORY'))
+		if (idx < 0) return "${name}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}"
+		return "${name.substring(0, idx)}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
 	}
 	
 	/**

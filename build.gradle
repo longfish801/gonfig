@@ -16,9 +16,9 @@ tasks.withType(Javadoc).each { it.options.encoding = 'UTF-8' }
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
-defaultTasks 'deploy'
+defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.1.00'
+version = '0.1.03'
 
 repositories {
 	mavenCentral()
@@ -56,7 +56,7 @@ generateHtml {
 	inputDirectory = file('src/markdown')
 	headerHtmlFile = file('src/markdown/template/header.html')
 	footerHtmlFile = file('src/markdown/template/footer.html')
-	pegdownExtensions = 'TOC,EXTANCHORLINKS,HARDWRAPS,FENCED_CODE_BLOCKS'
+	pegdownExtensions = 'TOC,EXTANCHORLINKS,HARDWRAPS,FENCED_CODE_BLOCKS,DEFINITIONS'
 }
 
 publishing {
@@ -69,17 +69,20 @@ publishing {
 }
 
 // サンプルソースを実行します
-task execSample(type: JavaExec, dependsOn: ['test']) {
+task execSamples(type: JavaExec, dependsOn: ['test']) {
 	main = 'sample.Sample'
 	classpath = sourceSets.test.runtimeClasspath
 }
 
-// 各資材を配備します
-task cleanDeploy(type: Delete){
+// フィックスします
+task fix(dependsOn: [clean, jacocoTestReport, execSamples, groovydoc, generateHtml]){
+}
+
+// マスターアップします
+task deleteDocs(type: Delete){
 	delete 'docs'
 }
-clean.dependsOn(cleanDeploy)
-task deploy(dependsOn: [clean, jacocoTestReport, execSample, publish, groovydoc, generateHtml]){
+task masterup(dependsOn: [deleteDocs, fix]){
 	doLast {
 		copy {
 			from 'build/html'
@@ -91,3 +94,8 @@ task deploy(dependsOn: [clean, jacocoTestReport, execSample, publish, groovydoc,
 		}
 	}
 }
+
+// リリースします
+task release(dependsOn: [publish]){
+}
+

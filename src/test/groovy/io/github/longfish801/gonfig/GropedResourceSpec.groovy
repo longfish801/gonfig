@@ -10,10 +10,11 @@ import java.util.regex.Pattern
 import java.util.regex.Matcher
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * GropedResourceクラスのテスト。
- * @version 1.0.00 2020/04/11
+ * @version 0.1.03 2020/05/20
  * @author io.github.longfish801
  */
 class GropedResourceSpec extends Specification {
@@ -64,7 +65,8 @@ class GropedResourceSpec extends Specification {
 		dir.path == 'somepath/.'.replaceAll(Pattern.quote('/'), Matcher.quoteReplacement(File.separator))
 	}
 	
-	def 'grope'(){
+	@Unroll
+	def 'grope - unroll'(){
 		given:
 		URL url
 		Closure getText = { URL resource ->
@@ -73,35 +75,43 @@ class GropedResourceSpec extends Specification {
 			}
 		}
 		
-		when: 'ファイルシステムの基底ディレクトリ上'
-		url = Rsrc.setBaseDir('src/test/file').grope('grope01.txt')
-		then:
-		getText(url) == 'grope01'
+		expect:
+		getText(Rsrc.setBaseDir('src/test/file').grope(name)) == expect
 		
-		when: 'ファイルシステムの平坦ディレクトリ上'
-		url = Rsrc.setBaseDir('src/test/file').grope('grope02.txt')
-		then:
-		getText(url) == 'grope02'
-		
-		when: 'ファイルシステムの深層ディレクトリ上'
-		url = Rsrc.setBaseDir('src/test/file').grope('grope03.txt')
-		then:
-		getText(url) == 'grope03'
-		
-		when: 'クラスパス上'
-		url = Rsrc.setBaseDir('src/test/file').grope('grope04.txt')
-		then:
-		getText(url) == 'grope04'
-		
-		when: 'クラスパスの、パッケージ名の半角コンマ(.)をパス区切り文字に置換した相対パス上'
-		url = Rsrc.setBaseDir('src/test/file').grope('grope05.txt')
-		then:
-		getText(url) == 'grope05'
+		where:
+		name			|| expect
+		'grope01.txt'	|| 'grope01'	// デフォルトロケール付き - ファイルシステムの基底ディレクトリ上
+		'grope02.txt'	|| 'grope02'	// デフォルトロケール付き - ファイルシステムの平坦ディレクトリ上
+		'grope03.txt'	|| 'grope03'	// デフォルトロケール付き - ファイルシステムの深層ディレクトリ上
+		'grope04.txt'	|| 'grope04'	// デフォルトロケール付き - クラスパス上
+		'grope05.txt'	|| 'grope05'	// デフォルトロケール付き - クラスパスの、パッケージ名の半角コンマ(.)をパス区切り文字に置換した相対パス上
+		'grope11.txt'	|| 'grope11'	// ファイルシステムの基底ディレクトリ上
+		'grope12.txt'	|| 'grope12'	// ファイルシステムの平坦ディレクトリ上
+		'grope13.txt'	|| 'grope13'	// ファイルシステムの深層ディレクトリ上
+		'grope14.txt'	|| 'grope14'	// クラスパス上
+		'grope15.txt'	|| 'grope15'	// クラスパスの、パッケージ名の半角コンマ(.)をパス区切り文字に置換した相対パス上
+	}
+	
+	def 'grope'(){
+		given:
+		URL url
 		
 		when: 'リソースがみつからない場合は null'
 		url = Rsrc.setBaseDir('src/test/file').grope('nosuchfile.txt')
 		then:
 		url == null
+	}
+	
+	@Unroll
+	def 'grantLocale'(){
+		expect:
+		Rsrc.grantLocale(name) == expect
+		
+		where:
+		name			|| expect
+		'some'			|| "some_${Locale.default}"			// 拡張子なし
+		'some.groovy'	|| "some_${Locale.default}.groovy"	// 拡張子あり
+		'some.'			|| "some_${Locale.default}."		// 終端が拡張子区切り
 	}
 	
 	def 'openStream'(){
