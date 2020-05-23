@@ -26,7 +26,9 @@ pre {
 	line-height: 1.3rem;
 	background-color: oldlace;
 }
-
+dd {
+	margin-left: 3rem;
+}
 -->
 </style>
 <title> gonfig</title>
@@ -46,9 +48,12 @@ pre {
 <li><a href="#groovydoc">Groovydoc</a></li>
 <li><a href="#mavenリポジトリ">Mavenリポジトリ</a></li>
 <li><a href="#設定ファイル">設定ファイル</a></li>
+<li><a href="#改版履歴">改版履歴</a></li>
+<li><a href="#改版履歴">改版履歴</a></li>
 </ul>
 <h2><a href="#概要" id="概要"></a>概要</h2>
-<p>　設定を静的に保持します。</p>
+<p>　設定を静的に保持します。<br />
+　groovy.util.ConfigSlurperを java.util.ResourceBundleのように利用できます。</p>
 <p>　個人が学習のために開発したものです。<br />
 　故障対応や問合せ回答などのサポートはしていません。</p>
 <h2><a href="#特徴" id="特徴"></a>特徴</h2>
@@ -58,9 +63,11 @@ pre {
 <li>設定ファイルは static変数の初期化時に読みこみます。</li>
 <li>設定ファイルは複数の候補に配置できます。<br />
 より優先度の高い場所に新しい設定ファイルを置くことで、古い設定を上書きできます。</li>
+<li>簡単な国際化に対応しています。<br />
+ファイル名にデフォルトロケールを付与した設定ファイルを優先的に読みこみます。</li>
 </ul>
 <h2><a href="#サンプルコード" id="サンプルコード"></a>サンプルコード</h2>
-<p>　設定ファイル（src/test/resources/sample/config.groovy）です。<br />
+<p>　設定ファイル（src/test/resources/sample/sampleconfig.groovy）です。<br />
 　キーと、それに対応する値を記述しています。</p>
 <pre><code>str = 'これはテストです。'
 specialChars = '～①㈱'
@@ -69,15 +76,15 @@ some.list = [ 1, 2, 3 ]
 </code></pre>
 <p>　設定を保持するクラス（src/test/groovy/sample/grope/Config.groovy）です。<br />
 　Gonfigを実装することで、static変数の初期化時に設定ファイルを読みこみます。<br />
-　getClazzメソッドをオーバーライドする必要があることに留意してください。</p>
+　Gonfigを実装する必要条件として、static変数 clazzに自クラスを格納してください。<br />
+　static変数 resourceFileNameに設定ファイル名を指定しています。</p>
 <pre><code>package sample.grope
 
 import io.github.longfish801.gonfig.Gonfig
 
 class Config implements Gonfig {
-	static Class getClazz(){
-		return Config.class
-	}
+	static final Class clazz = Config.class
+	static final String resourceFileName = 'sampleconfig'
 }
 </code></pre>
 <p>　設定を参照するクラス（src/test/groovy/sample/Sample.groovy）です。<br />
@@ -95,7 +102,7 @@ class Sample {
 	}
 }
 </code></pre>
-<p>　このサンプルコードは build.gradle内の execSampleタスクで実行しています。</p>
+<p>　このサンプルコードは build.gradle内の execSamplesタスクで実行しています。</p>
 <h2><a href="#githubリポジトリ" id="githubリポジトリ"></a>GitHubリポジトリ</h2>
 <ul>
 <li><a href="https://github.com/longfish801/gonfig">gonfig</a></li>
@@ -117,20 +124,39 @@ dependencies {
 }
 </code></pre>
 <h2><a href="#設定ファイル" id="設定ファイル"></a>設定ファイル</h2>
-<p>　設定ファイル名のフォーマットは以下のとおりです。<br />
-　Gonfigを実装したクラス名が Someならば、設定ファイル名は some.groovyとなります。</p>
-<pre><code>${Gonfigを実装したクラスの名前をすべて小文字にした文字列}.groovy
+<p>　設定ファイル名のフォーマットはデフォルトで以下のとおりです。<br />
+　設定ファイルのファイル名、拡張子をデフォルトから変更したい場合は Gonfig特性の getResourceFileNameメソッド、getResourceFileExtensionメソッドをそれぞれオーバーライド（もしくは static変数 resourceFileName、resourceFileExtensionを定義）してください。</p>
+<pre><code>${Gonfigを実装したクラスの単純名をすべて小文字に変換した文字列}.groovy
 </code></pre>
-<p>　Someクラスのパッケージが sample.gropeだったとします。<br />
-　カレントフォルダが /foo、クラスパスが /booに通っていたとします。<br />
-　以下の順番で some.groovyを探します。初めにみつかったファイルを読みこみます。</p>
+<p>　簡単な国際化に対応しています。<br />
+　まずはファイル名の末尾に半角アンダーバー(_)＋<a href="https://docs.oracle.com/javase/jp/8/docs/api/java/util/Locale.html#getDefault--">デフォルトロケール</a>を連結したファイルを探します。<br />
+　デフォルトロケールを付与したファイルがみつからない場合は、デフォルトロケールを付与しないファイルを探します。</p>
+<p>　Gonfigを実装した、パッケージ sample.gropeに属す Someクラスがあったとします。<br />
+　デフォルトロケールが &quot;ja_JP&quot;、カレントフォルダが /foo、クラスパスが /booに通っていたとします。<br />
+　まずは以下の箇所から some_ja_JP.groovyを探します。次に some.groovyを探します。初めにみつかったファイルを読みこみます。</p>
 <ol>
-<li>ファイルシステム /foo/some.groovy</li>
-<li>ファイルシステム /foo/sample.grope/some.groovy</li>
-<li>ファイルシステム /foo/sample/grope/some.groovy</li>
-<li>クラスパス /boo/some.groovy</li>
-<li>クラスパス /boo/sample/grope/some.groovy</li>
+<li>ファイルシステム /foo</li>
+<li>ファイルシステム /foo/sample.grope</li>
+<li>ファイルシステム /foo/sample/grope</li>
+<li>クラスパス /boo</li>
+<li>クラスパス /boo/sample/grope</li>
 </ol>
+<h2><a href="#改版履歴" id="改版履歴"></a>改版履歴</h2>
+<dl>
+<dt>0.1.01</dt>
+<dd>build.gradleに fix, masterup, releaseタスクを追加しました。</dd>
+<dt>0.1.02</dt>
+<dd>設定ファイルを参照するためのリソース名を改変可能にしました。</dd>
+<dt>0.1.03</dt>
+<dd>簡単な国際化に対応しました。</dd>
+</dl>
+<h2><a href="#改版履歴" id="改版履歴"></a>改版履歴</h2>
+<dl>
+<dt>0.1.01</dt>
+<dd>build.gradleに fix, masterup, releaseタスクを追加しました。</dd>
+<dt>0.1.02</dt>
+<dd>設定ファイルを参照するためのリソース名を改変可能にしました。</dd>
+</dl>
 
 </div><!-- end of col -->
 </div><!-- end of row -->
