@@ -17,6 +17,8 @@
 * 設定ファイルは static変数の初期化時に読みこみます。
 * 設定ファイルは複数の候補に配置できます。
   より優先度の高い場所に新しい設定ファイルを置くことで、古い設定を上書きできます。
+* 簡単な国際化に対応しています。
+  ファイル名にデフォルトロケールを付与した設定ファイルを優先的に読みこみます。
 
 ## サンプルコード
 
@@ -93,22 +95,25 @@ dependencies {
 ## 設定ファイル
 
 　設定ファイル名のフォーマットはデフォルトで以下のとおりです。
-　Gonfigを実装したクラス名が Someならば、設定ファイル名は some.groovyとなります。
-　設定ファイル名、拡張子をデフォルトから変更したい場合は Gonfig特性の getResourceFileNameメソッド、getResourceFileExtensionメソッドをそれぞれオーバーライド（もしくは static変数 resourceFileName、resourceFileExtensionを定義）してください。
+　設定ファイルのファイル名、拡張子をデフォルトから変更したい場合は Gonfig特性の getResourceFileNameメソッド、getResourceFileExtensionメソッドをそれぞれオーバーライド（もしくは static変数 resourceFileName、resourceFileExtensionを定義）してください。
 
 ```
 ${Gonfigを実装したクラスの単純名をすべて小文字に変換した文字列}.groovy
 ```
 
-　Someクラスのパッケージが sample.gropeだったとします。
-　カレントフォルダが /foo、クラスパスが /booに通っていたとします。
-　以下の順番で some.groovyを探します。初めにみつかったファイルを読みこみます。
+　簡単な国際化に対応しています。
+　まずはファイル名の末尾に半角アンダーバー(_)＋[デフォルトロケール](https://docs.oracle.com/javase/jp/8/docs/api/java/util/Locale.html#getDefault--)を連結したファイルを探します。
+　デフォルトロケールを付与したファイルがみつからない場合は、デフォルトロケールを付与しないファイルを探します。
 
-1. ファイルシステム /foo/some.groovy
-2. ファイルシステム /foo/sample.grope/some.groovy
-3. ファイルシステム /foo/sample/grope/some.groovy
-4. クラスパス /boo/some.groovy
-5. クラスパス /boo/sample/grope/some.groovy
+　Gonfigを実装した、パッケージ sample.gropeに属す Someクラスがあったとします。
+　デフォルトロケールが "ja_JP"、カレントフォルダが /foo、クラスパスが /booに通っていたとします。
+　まずは以下の箇所から some_ja_JP.groovyを探します。次に some.groovyを探します。初めにみつかったファイルを読みこみます。
+
+1. ファイルシステム /foo
+2. ファイルシステム /foo/sample.grope
+3. ファイルシステム /foo/sample/grope
+4. クラスパス /boo
+5. クラスパス /boo/sample/grope
 
 ## 改版履歴
 
@@ -117,4 +122,7 @@ ${Gonfigを実装したクラスの単純名をすべて小文字に変換した
 
 0.1.02
 : 設定ファイルを参照するためのリソース名を改変可能にしました。
+
+0.1.03
+: 簡単な国際化に対応しました。
 

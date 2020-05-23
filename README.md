@@ -15,6 +15,8 @@ No support such as troubleshooting, answering inquiries, and so on.
 * Setting file is loaded when a static variable is initialized.
 * Setting file can be placed in multiple candidates.
   You can override old settings, if new setting file is placed in a higher priority location.
+* Simple internationalization is supported.
+  Setting file with default locale in the file name will be read first.
 
 ## Sample Code
 
