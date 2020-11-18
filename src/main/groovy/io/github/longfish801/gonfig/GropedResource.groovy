@@ -28,17 +28,16 @@ import org.slf4j.LoggerFactory
  * 参照してください。<br/>
  * 本特性の実装時は {@link #getClazz()}のオーバーライドが
  * 必要なことに注意してください。</p>
- *
- * <p>本特性を継承して使用すると staticメンバの宣言が実行されず、
- * 初期化されない問題がみつかりました。<br/>
- * 対応としてgetterメソッド内や初めて参照するときに初期化しています。<br/>
- * この挙動が Groovyの故障なのか追及はしていません。
- * @version 0.1.03 2020/05/20
+ * 
+ * <p>実装した特性のstaticメソッド実行時に、その特性の
+ * staticフィールドが初期化されていない問題がみつかりました。
+ * このためstaticフィールドは初めて参照するとき初期化しています。
+ * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
 trait GropedResource {
 	/** リソースバンドル */
-	static final ResourceBundle RSRC = ResourceBundle.getBundle(GropedResource.class.canonicalName)
+	private static ResourceBundle _rsrc
 	/** ログ出力 */
 	private static Logger _log
 	/** 基底ディレクトリ */
@@ -56,6 +55,16 @@ trait GropedResource {
 	 */
 	static Class getClazz(){
 		throw new UnsupportedOperationException('Override this method.')
+	}
+	
+	/**
+	 * リソースバンドルを取得します。<br/>
+	 * 未設定であれば初期化します。
+	 * @return リソースバンドル
+	 */
+	static ResourceBundle getRsrc(){
+		if (_rsrc == null) _rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
+		return _rsrc
 	}
 	
 	/**
@@ -84,7 +93,7 @@ trait GropedResource {
 	 * @return 基底ディレクトリ
 	 */
 	static File getBaseDir(){
-		if (_baseDir == null) _baseDir = new File(RSRC.getString('CURRENT_DIRECTORY'))
+		if (_baseDir == null) _baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
 		return _baseDir
 	}
 	
@@ -103,7 +112,7 @@ trait GropedResource {
 	 * @return 平坦ディレクトリ
 	 */
 	static File getFlatDir(){
-		return new File(baseDir, clazz.package?.name ?: RSRC.getString('CURRENT_DIRECTORY'))
+		return new File(baseDir, clazz.package?.name ?: rsrc.getString('CURRENT_DIRECTORY'))
 	}
 	
 	/**
@@ -122,9 +131,9 @@ trait GropedResource {
 	 * @return 深層ディレクトリ
 	 */
 	static File getDeepDir(){
-		if (clazz.package == null) return new File(baseDir, RSRC.getString('CURRENT_DIRECTORY'))
+		if (clazz.package == null) return new File(baseDir, rsrc.getString('CURRENT_DIRECTORY'))
 		String path = clazz.package.name.replaceAll(
-			Pattern.quote(RSRC.getString('PACKAGE_SEPARATOR')),
+			Pattern.quote(rsrc.getString('PACKAGE_SEPARATOR')),
 			Matcher.quoteReplacement(File.separator))
 		return new File(baseDir, path)
 	}
@@ -188,9 +197,9 @@ trait GropedResource {
 	 * @return デフォルトロケールを付与したリソースの名前
 	 */
 	static String grantLocale(String name){
-		int idx = name.lastIndexOf(RSRC.getString('CURRENT_DIRECTORY'))
-		if (idx < 0) return "${name}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}"
-		return "${name.substring(0, idx)}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
+		int idx = name.lastIndexOf(rsrc.getString('CURRENT_DIRECTORY'))
+		if (idx < 0) return "${name}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}"
+		return "${name.substring(0, idx)}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
 	}
 	
 	/**
