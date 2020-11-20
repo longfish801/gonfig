@@ -37,13 +37,13 @@ import org.slf4j.LoggerFactory
  */
 trait GropedResource {
 	/** リソースバンドル */
-	private static ResourceBundle _rsrc
+	static ResourceBundle _rsrc
 	/** ログ出力 */
-	private static Logger _log
+	static Logger _log
 	/** 基底ディレクトリ */
-	private static File _baseDir
+	static File _baseDir
 	/** ConfigSlurper */
-	private static ConfigSlurper _slurper
+	static ConfigSlurper _slurper
 	
 	/**
 	 * クラスを取得します。<br/>
@@ -58,8 +58,7 @@ trait GropedResource {
 	}
 	
 	/**
-	 * リソースバンドルを取得します。<br/>
-	 * 未設定であれば初期化します。
+	 * リソースバンドルを取得します。
 	 * @return リソースバンドル
 	 */
 	static ResourceBundle getRsrc(){
@@ -68,8 +67,7 @@ trait GropedResource {
 	}
 	
 	/**
-	 * ログ出力を取得します。<br/>
-	 * 未設定であれば初期化します。
+	 * ログ出力を取得します。
 	 * @return Logger
 	 */
 	static Logger getLog(){
@@ -95,6 +93,15 @@ trait GropedResource {
 	static File getBaseDir(){
 		if (_baseDir == null) _baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
 		return _baseDir
+	}
+	
+	/**
+	 * ConfigSlurperを取得します。
+	 * @return ConfigSlurper
+	 */
+	static ConfigSlurper getSlurper(){
+		if (_slurper == null) _slurper = new ConfigSlurper()
+		return _slurper
 	}
 	
 	/**
@@ -235,8 +242,7 @@ trait GropedResource {
 	 * @see #grope(String)
 	 */
 	static ConfigObject configObject(String name){
-		if (_slurper == null) _slurper = new ConfigSlurper()
 		URL url = grope(name)
-		return (url == null)? null : _slurper.parse(url)
+		return (url == null)? null : slurper.parse(url)
 	}
 }
