@@ -37,13 +37,13 @@ import org.slf4j.LoggerFactory
  */
 trait GropedResource {
 	/** リソースバンドル */
-	static ResourceBundle _rsrc
+	static final ResourceBundle rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
 	/** ログ出力 */
-	static Logger _log
-	/** 基底ディレクトリ */
-	static File _baseDir
+	static final Logger log = LoggerFactory.getLogger(GropedResource.class)
 	/** ConfigSlurper */
-	static ConfigSlurper _slurper
+	static final ConfigSlurper slurper = new ConfigSlurper()
+	/** 基底ディレクトリ */
+	static File baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
 	
 	/**
 	 * クラスを取得します。<br/>
@@ -58,30 +58,12 @@ trait GropedResource {
 	}
 	
 	/**
-	 * リソースバンドルを取得します。
-	 * @return リソースバンドル
-	 */
-	static ResourceBundle getRsrc(){
-		if (_rsrc == null) _rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
-		return _rsrc
-	}
-	
-	/**
-	 * ログ出力を取得します。
-	 * @return Logger
-	 */
-	static Logger getLog(){
-		if (_log == null) _log = LoggerFactory.getLogger(GropedResource.class)
-		return _log
-	}
-	
-	/**
 	 * 基底ディレクトリを設定します。
 	 * @param path 基底ディレクトリへのパス
 	 * @return 自クラス
 	 */
 	static def setBaseDir(String path){
-		_baseDir = new File(path)
+		baseDir = new File(path)
 		return this
 	}
 	
@@ -91,17 +73,7 @@ trait GropedResource {
 	 * @return 基底ディレクトリ
 	 */
 	static File getBaseDir(){
-		if (_baseDir == null) _baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
-		return _baseDir
-	}
-	
-	/**
-	 * ConfigSlurperを取得します。
-	 * @return ConfigSlurper
-	 */
-	static ConfigSlurper getSlurper(){
-		if (_slurper == null) _slurper = new ConfigSlurper()
-		return _slurper
+		return baseDir
 	}
 	
 	/**
