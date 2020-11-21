@@ -60,6 +60,7 @@ trait Gonfig implements GropedResource {
 	 * @return 設定ファイルの拡張子
 	 */
 	static String getResourceFileExtension() {
-		return rsrc.getString('CONFIG_FILE_EXTENSION')
+		return '.groovy'
+		//return rsrc.getString('CONFIG_FILE_EXTENSION')
 	}
 }
