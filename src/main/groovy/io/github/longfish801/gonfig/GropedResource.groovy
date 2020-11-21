@@ -27,21 +27,19 @@ import org.slf4j.LoggerFactory
  * <p>どのようにリソースを探すのか、詳細は {@link #grope(String)}を
  * 参照してください。<br/>
  * 本特性の実装時は {@link #getClazz()}のオーバーライドが
- * 必要なことに注意してください。</p>
- * 
- * <p>実装した特性のstaticメソッド実行時に、その特性の
- * staticフィールドが初期化されていない問題がみつかりました。
- * このためstaticフィールドは初めて参照するとき初期化しています。
+ * 必要なことに注意してください。
  * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
 trait GropedResource {
+	/** リソースバンドル */
+	static final ResourceBundle rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
 	/** ログ出力 */
 	static final Logger log = LoggerFactory.getLogger(GropedResource.class)
 	/** ConfigSlurper */
 	static final ConfigSlurper slurper = new ConfigSlurper()
 	/** 基底ディレクトリ */
-	static File baseDir = new File('.')
+	static File baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
 	
 	/**
 	 * クラスを取得します。<br/>
@@ -66,15 +64,6 @@ trait GropedResource {
 	}
 	
 	/**
-	 * 基底ディレクトリを取得します。<br/>
-	 * 未設定であればデフォルト値としてカレントディレクトリを返します。
-	 * @return 基底ディレクトリ
-	 */
-	static File getBaseDir(){
-		return baseDir
-	}
-	
-	/**
 	 * 平坦ディレクトリを返します。<br/>
 	 * 平坦ディレクトリは次のように定義されます。<br/>
 	 * 本特性を実装するクラスが所属するパッケージ名を
@@ -89,7 +78,7 @@ trait GropedResource {
 	 * @return 平坦ディレクトリ
 	 */
 	static File getFlatDir(){
-		return new File(baseDir, clazz.package?.name ?: '.')
+		return new File(baseDir, clazz.package?.name ?: rsrc.getString('CURRENT_DIRECTORY'))
 	}
 	
 	/**
@@ -108,9 +97,9 @@ trait GropedResource {
 	 * @return 深層ディレクトリ
 	 */
 	static File getDeepDir(){
-		if (clazz.package == null) return new File(baseDir, '.')
+		if (clazz.package == null) return new File(baseDir, rsrc.getString('CURRENT_DIRECTORY'))
 		String path = clazz.package.name.replaceAll(
-			Pattern.quote('.'),
+			Pattern.quote(rsrc.getString('PACKAGE_SEPARATOR')),
 			Matcher.quoteReplacement(File.separator))
 		return new File(baseDir, path)
 	}
@@ -133,7 +122,6 @@ trait GropedResource {
 	 * @return URL（リソースがみつからない場合は null）
 	 * @see #grantLocale(String)
 	 * @see #setBaseDir(String)
-	 * @see #getBaseDir()
 	 * @see #getDeepDir()
 	 * @see #getFlatDir()
 	 */
@@ -174,9 +162,9 @@ trait GropedResource {
 	 * @return デフォルトロケールを付与したリソースの名前
 	 */
 	static String grantLocale(String name){
-		int idx = name.lastIndexOf('.')
-		if (idx < 0) return "${name}_${Locale.default}"
-		return "${name.substring(0, idx)}_${Locale.default}${name.substring(idx)}"
+		int idx = name.lastIndexOf(rsrc.getString('CURRENT_DIRECTORY'))
+		if (idx < 0) return "${name}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}"
+		return "${name.substring(0, idx)}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
 	}
 	
 	/**
