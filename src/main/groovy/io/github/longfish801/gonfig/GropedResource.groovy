@@ -36,14 +36,12 @@ import org.slf4j.LoggerFactory
  * @author io.github.longfish801
  */
 trait GropedResource {
-	/** リソースバンドル */
-	static final ResourceBundle rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
 	/** ログ出力 */
 	static final Logger log = LoggerFactory.getLogger(GropedResource.class)
 	/** ConfigSlurper */
 	static final ConfigSlurper slurper = new ConfigSlurper()
 	/** 基底ディレクトリ */
-	static File baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
+	static File baseDir = new File('.')
 	
 	/**
 	 * クラスを取得します。<br/>
@@ -91,7 +89,7 @@ trait GropedResource {
 	 * @return 平坦ディレクトリ
 	 */
 	static File getFlatDir(){
-		return new File(baseDir, clazz.package?.name ?: rsrc.getString('CURRENT_DIRECTORY'))
+		return new File(baseDir, clazz.package?.name ?: '.')
 	}
 	
 	/**
@@ -110,9 +108,9 @@ trait GropedResource {
 	 * @return 深層ディレクトリ
 	 */
 	static File getDeepDir(){
-		if (clazz.package == null) return new File(baseDir, rsrc.getString('CURRENT_DIRECTORY'))
+		if (clazz.package == null) return new File(baseDir, '.')
 		String path = clazz.package.name.replaceAll(
-			Pattern.quote(rsrc.getString('PACKAGE_SEPARATOR')),
+			Pattern.quote('.'),
 			Matcher.quoteReplacement(File.separator))
 		return new File(baseDir, path)
 	}
@@ -176,9 +174,9 @@ trait GropedResource {
 	 * @return デフォルトロケールを付与したリソースの名前
 	 */
 	static String grantLocale(String name){
-		int idx = name.lastIndexOf(rsrc.getString('CURRENT_DIRECTORY'))
-		if (idx < 0) return "${name}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}"
-		return "${name.substring(0, idx)}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
+		int idx = name.lastIndexOf('.')
+		if (idx < 0) return "${name}_${Locale.default}"
+		return "${name.substring(0, idx)}_${Locale.default}${name.substring(idx)}"
 	}
 	
 	/**
