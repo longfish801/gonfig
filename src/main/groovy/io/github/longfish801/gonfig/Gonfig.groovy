@@ -31,7 +31,7 @@ package io.github.longfish801.gonfig
  */
 trait Gonfig implements GropedResource {
 	/** 設定値 */
-	private static ConfigObject _gonfig
+	static ConfigObject _gonfig
 	
 	/**
 	 * キーに紐づく設定値を参照します。

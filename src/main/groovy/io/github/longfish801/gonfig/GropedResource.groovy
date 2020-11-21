@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory
  */
 trait GropedResource {
 	/** リソースバンドル */
-	static ResourceBundle _rsrc
+	static ResourceBundle rsrc_
 	/** ログ出力 */
 	static Logger _log
 	/** 基底ディレクトリ */
@@ -62,8 +62,8 @@ trait GropedResource {
 	 * @return リソースバンドル
 	 */
 	static ResourceBundle getRsrc(){
-		if (_rsrc == null) _rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
-		return _rsrc
+		if (rsrc_ == null) rsrc_ = ResourceBundle.getBundle(GropedResource.class.canonicalName)
+		return rsrc_
 	}
 	
 	/**
