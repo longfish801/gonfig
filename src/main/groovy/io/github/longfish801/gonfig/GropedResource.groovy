@@ -27,24 +27,19 @@ import org.slf4j.LoggerFactory
  * <p>どのようにリソースを探すのか、詳細は {@link #grope(String)}を
  * 参照してください。<br/>
  * 本特性の実装時は {@link #getClazz()}のオーバーライドが
- * 必要なことに注意してください。</p>
- *
- * <p>本特性を継承して使用すると staticメンバの宣言が実行されず、
- * 初期化されない問題がみつかりました。<br/>
- * 対応としてgetterメソッド内や初めて参照するときに初期化しています。<br/>
- * この挙動が Groovyの故障なのか追及はしていません。
- * @version 0.1.03 2020/05/20
+ * 必要なことに注意してください。
+ * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
 trait GropedResource {
 	/** リソースバンドル */
-	static final ResourceBundle RSRC = ResourceBundle.getBundle(GropedResource.class.canonicalName)
+	static final ResourceBundle rsrc = ResourceBundle.getBundle(GropedResource.class.canonicalName)
 	/** ログ出力 */
-	private static Logger _log
-	/** 基底ディレクトリ */
-	private static File _baseDir
+	static final Logger log = LoggerFactory.getLogger(GropedResource.class)
 	/** ConfigSlurper */
-	private static ConfigSlurper _slurper
+	static final ConfigSlurper slurper = new ConfigSlurper()
+	/** 基底ディレクトリ */
+	static File baseDir = new File(rsrc.getString('CURRENT_DIRECTORY'))
 	
 	/**
 	 * クラスを取得します。<br/>
@@ -59,33 +54,13 @@ trait GropedResource {
 	}
 	
 	/**
-	 * ログ出力を取得します。<br/>
-	 * 未設定であれば初期化します。
-	 * @return Logger
-	 */
-	static Logger getLog(){
-		if (_log == null) _log = LoggerFactory.getLogger(GropedResource.class)
-		return _log
-	}
-	
-	/**
 	 * 基底ディレクトリを設定します。
 	 * @param path 基底ディレクトリへのパス
 	 * @return 自クラス
 	 */
 	static def setBaseDir(String path){
-		_baseDir = new File(path)
+		baseDir = new File(path)
 		return this
-	}
-	
-	/**
-	 * 基底ディレクトリを取得します。<br/>
-	 * 未設定であればデフォルト値としてカレントディレクトリを返します。
-	 * @return 基底ディレクトリ
-	 */
-	static File getBaseDir(){
-		if (_baseDir == null) _baseDir = new File(RSRC.getString('CURRENT_DIRECTORY'))
-		return _baseDir
 	}
 	
 	/**
@@ -103,7 +78,7 @@ trait GropedResource {
 	 * @return 平坦ディレクトリ
 	 */
 	static File getFlatDir(){
-		return new File(baseDir, clazz.package?.name ?: RSRC.getString('CURRENT_DIRECTORY'))
+		return new File(baseDir, clazz.package?.name ?: rsrc.getString('CURRENT_DIRECTORY'))
 	}
 	
 	/**
@@ -122,9 +97,9 @@ trait GropedResource {
 	 * @return 深層ディレクトリ
 	 */
 	static File getDeepDir(){
-		if (clazz.package == null) return new File(baseDir, RSRC.getString('CURRENT_DIRECTORY'))
+		if (clazz.package == null) return new File(baseDir, rsrc.getString('CURRENT_DIRECTORY'))
 		String path = clazz.package.name.replaceAll(
-			Pattern.quote(RSRC.getString('PACKAGE_SEPARATOR')),
+			Pattern.quote(rsrc.getString('PACKAGE_SEPARATOR')),
 			Matcher.quoteReplacement(File.separator))
 		return new File(baseDir, path)
 	}
@@ -147,7 +122,6 @@ trait GropedResource {
 	 * @return URL（リソースがみつからない場合は null）
 	 * @see #grantLocale(String)
 	 * @see #setBaseDir(String)
-	 * @see #getBaseDir()
 	 * @see #getDeepDir()
 	 * @see #getFlatDir()
 	 */
@@ -188,9 +162,9 @@ trait GropedResource {
 	 * @return デフォルトロケールを付与したリソースの名前
 	 */
 	static String grantLocale(String name){
-		int idx = name.lastIndexOf(RSRC.getString('CURRENT_DIRECTORY'))
-		if (idx < 0) return "${name}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}"
-		return "${name.substring(0, idx)}${RSRC.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
+		int idx = name.lastIndexOf(rsrc.getString('CURRENT_DIRECTORY'))
+		if (idx < 0) return "${name}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}"
+		return "${name.substring(0, idx)}${rsrc.getString('LOCALE_SEPARATOR')}${Locale.default}${name.substring(idx)}"
 	}
 	
 	/**
@@ -226,8 +200,7 @@ trait GropedResource {
 	 * @see #grope(String)
 	 */
 	static ConfigObject configObject(String name){
-		if (_slurper == null) _slurper = new ConfigSlurper()
 		URL url = grope(name)
-		return (url == null)? null : _slurper.parse(url)
+		return (url == null)? null : slurper.parse(url)
 	}
 }

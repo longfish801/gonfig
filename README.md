@@ -68,5 +68,5 @@ This sample code is executed in the execSamples task, see build.gradle.
 
 ## Next Step
 
-Please see the [documentation](https://longfish801.github.io/gonfig/) for more detail.
+Please see the [documentation](https://longfish801.github.io/maven/gonfig/) for more detail.
 

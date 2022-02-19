@@ -11,7 +11,5 @@ package io.github.longfish801.gonfig
  * @author io.github.longfish801
  */
 class Rsrc implements GropedResource {
-	static Class getClazz(){
-		return Rsrc.class
-	}
+	static final Class clazz = Rsrc.class
 }

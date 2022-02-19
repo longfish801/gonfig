@@ -11,7 +11,5 @@ package io.github.longfish801.gonfig
  * @author io.github.longfish801
  */
 class Config implements Gonfig {
-	static Class getClazz(){
-		return Config.class
-	}
+	static final Class clazz = Config.class
 }

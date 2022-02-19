@@ -21,15 +21,17 @@ package io.github.longfish801.gonfig
  * {@link #getResourceFileExtension()}メソッドを
  * オーバーライドすることでリソース名を変えることができます。<br/>
  * 本特性の実装時は {@link GropedResource#getClazz()}の
- * オーバーライドが必要なことに注意してください。
- * @version 0.1.02 2020/05/20
+ * オーバーライドが必要なことに注意してください。</p>
+ * 
+ * <p>実装した特性のstaticメソッド実行時に、その特性の
+ * staticフィールドが初期化されていない問題がみつかりました。
+ * このためstaticフィールドは初めて参照するとき初期化しています。
+ * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
-trait Gonfig extends GropedResource {
-	/** リソースバンドル */
-	static final ResourceBundle RSRC = ResourceBundle.getBundle(Gonfig.class.canonicalName)
+trait Gonfig implements GropedResource {
 	/** 設定値 */
-	static final ConfigObject GONFIG = configObject("${resourceFileName}${resourceFileExtension}")
+	static ConfigObject _gonfig
 	
 	/**
 	 * キーに紐づく設定値を参照します。
@@ -37,7 +39,8 @@ trait Gonfig extends GropedResource {
 	 * @return キーに紐づく設定値
 	 */
 	static def $static_propertyMissing(String key) {
-		return GONFIG.getAt(key)
+		if (_gonfig == null) _gonfig = configObject("${resourceFileName}${resourceFileExtension}")
+		return _gonfig.getAt(key)
 	}
 	
 	/**
@@ -57,6 +60,6 @@ trait Gonfig extends GropedResource {
 	 * @return 設定ファイルの拡張子
 	 */
 	static String getResourceFileExtension() {
-		return RSRC.getString('CONFIG_FILE_EXTENSION')
+		return rsrc.getString('CONFIG_FILE_EXTENSION')
 	}
 }
