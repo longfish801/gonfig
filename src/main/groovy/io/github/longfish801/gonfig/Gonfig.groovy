@@ -26,7 +26,6 @@ package io.github.longfish801.gonfig
  * <p>実装した特性のstaticメソッド実行時に、その特性の
  * staticフィールドが初期化されていない問題がみつかりました。
  * このためstaticフィールドは初めて参照するとき初期化しています。
- * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
 trait Gonfig implements GropedResource {
