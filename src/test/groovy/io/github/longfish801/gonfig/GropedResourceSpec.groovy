@@ -14,7 +14,6 @@ import spock.lang.Unroll
 
 /**
  * GropedResourceクラスのテスト。
- * @version 0.1.03 2020/05/20
  * @author io.github.longfish801
  */
 class GropedResourceSpec extends Specification {

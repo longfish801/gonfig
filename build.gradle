@@ -5,7 +5,7 @@
  */
 
 plugins {
-	id 'com.github.monosoul.markdown.page.generator' version '2.1.0'
+	id 'com.github.monosoul.markdown.page.generator' version '2.3.1.1'
 	id 'jacoco'
 }
 
@@ -18,13 +18,14 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.2.00'
+version = '1.0.00'
 
 // 環境変数からローカルのmavenリポジトリへのパスを取得します
 String mavenPath = System.env['MAVEN_PATH']
 if (mavenPath == null || mavenPath.empty){
 	throw new Exception('Environment variables MAVEN_PATH is required.')
 }
+mavenPath += '/docs'
 
 repositories {
 	mavenCentral()
@@ -76,7 +77,7 @@ publishing {
 
 // サンプルを実行します
 task execSamples(type: JavaExec, dependsOn: ['test']) {
-	main = 'sample.Sample'
+	mainClass = 'sample.Sample'
 	classpath = sourceSets.test.runtimeClasspath
 }
 

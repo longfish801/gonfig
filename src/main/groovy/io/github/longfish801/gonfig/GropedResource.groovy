@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory
  * 参照してください。<br/>
  * 本特性の実装時は {@link #getClazz()}のオーバーライドが
  * 必要なことに注意してください。
- * @version 0.1.05 2020/11/16
  * @author io.github.longfish801
  */
 trait GropedResource {

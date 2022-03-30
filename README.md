@@ -1,4 +1,4 @@
-﻿# gonfig
+# gonfig
 
 ## Overview
 

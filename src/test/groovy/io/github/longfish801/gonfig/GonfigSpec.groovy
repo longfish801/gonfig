@@ -12,7 +12,6 @@ import spock.lang.Specification
 
 /**
  * Gonfigクラスのテスト。
- * @version 0.1.02 2020/05/20
  * @author io.github.longfish801
  */
 class GonfigSpec extends Specification {
