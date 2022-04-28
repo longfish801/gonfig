@@ -8,7 +8,6 @@ package io.github.longfish801.gonfig
 import java.nio.charset.Charset
 import java.util.regex.Pattern
 import java.util.regex.Matcher
-import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -184,9 +183,7 @@ trait GropedResource {
 	 * @see #openStream(String)
 	 */
 	static String toString(String name){
-		return openStream(name)?.withCloseable { InputStream stream ->
-			IOUtils.toString(stream, Charset.defaultCharset())
-		}
+		return openStream(name)?.withCloseable { it.text }
 	}
 	
 	/**
