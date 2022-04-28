@@ -8,7 +8,6 @@ package io.github.longfish801.gonfig
 import java.nio.charset.Charset
 import java.util.regex.Pattern
 import java.util.regex.Matcher
-import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -69,9 +68,7 @@ class GropedResourceSpec extends Specification {
 		given:
 		URL url
 		Closure getText = { URL resource ->
-			return resource?.openStream().withCloseable {
-				IOUtils.toString(it, Charset.defaultCharset())
-			}
+			return resource?.openStream().withCloseable { it.text }
 		}
 		
 		expect:
@@ -117,7 +114,7 @@ class GropedResourceSpec extends Specification {
 		given:
 		InputStream stream
 		Closure getText = { InputStream inputStream ->
-			return inputStream?.withCloseable { IOUtils.toString(it, Charset.defaultCharset()) }
+			return inputStream?.withCloseable { it.text }
 		}
 		
 		when: 'リソースの入力ストリームを返します'
